@@ -37,8 +37,8 @@ logging.info("params read")
 desired_reports_tmp = cfg.get_parameters()["desired_reports"]
 from_dt = cfg.get_parameters()["from_date"]  # YYYY-MM-DD
 to_dt = cfg.get_parameters()["to_date"]  # YYYY-MM-DD
-api_endpoint = cfg.get_parameters()["#api_endpoint"]
-api_token = cfg.get_parameters()["api_token"]
+api_endpoint = cfg.get_parameters()["api_endpoint"]
+api_token = cfg.get_parameters()["#api_token"]
 app_id_tmp = cfg.get_parameters()["app_id"]
 dayspan = int(cfg.get_parameters()["dayspan"])
 desired_reports = [i.strip() for i in desired_reports_tmp.split(",")]
