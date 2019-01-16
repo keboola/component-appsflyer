@@ -102,8 +102,8 @@ def get_n_export_one_report(api_endpoint, api_token, app_id, report_name, from_d
 
         cfg.write_table_manifest(file_name=output_file,
                                  destination='',
-                                 primary_key=['AppsFlyer ID', 'Install Time', 'Media Source',
-                                              'Campaign', 'Event Name', 'Event Time', 'Event Value'],
+                                 primary_key=['AppsFlyer_ID', 'Install_Time', 'Media_Source',
+                                              'Campaign', 'Event_Name', 'Event_Time', 'Event_Value'],
                                  incremental=True)
 
 # main
@@ -115,7 +115,8 @@ def main():
         for report_name in desired_reports:
 
             get_n_export_one_report(api_endpoint=api_endpoint, api_token=api_token,
-                                    app_id=app_id, report_name=report_name, from_date=from_dt, to_date=to_dt)
+                                    app_id=app_id, report_name=report_name, from_date=from_dt,
+                                    to_date=to_dt)
 
             logging.info('Report ' + report_name + ' for app_id ' +
                          app_id + ' succesfully fetched.')
