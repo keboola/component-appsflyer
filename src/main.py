@@ -5,6 +5,7 @@ import urllib.parse
 import urllib.error
 import logging
 import sys
+from datetime import datetime, timedelta
 "__author__ = 'Radim Kasparek kasrad'"
 "__credits__ = 'Keboola Drak"
 "__component__ = 'AppsFlyer Extractor'"
@@ -46,7 +47,8 @@ logging.info("config successfuly read")
 
 
 if (from_dt != '' or to_dt != '') and dayspan != '':
-    logging.error("Please add either From Date and To Date, or dayspan, not both.")
+    logging.error(
+        "Please add either From Date and To Date, or dayspan, not both.")
     sys.exit(1)
 elif (from_dt == '' or to_dt == '') and dayspan == '':
     logging.error("Please add either From Date and To Date or dayspan.")
@@ -55,7 +57,7 @@ elif (from_dt != '' and to_dt != '') and dayspan == '':
     pass
 elif (from_dt == '' or to_dt == '') and dayspan != '':
     to_dt = datetime.today().strftime('%Y-%m-%d')
-    from_dt = (datetime.utcnow() - timedelta(days = int(dayspan)))\
+    from_dt = (datetime.utcnow() - timedelta(days=int(dayspan)))\
         .date().isoformat()
 
 # Destination to fetch and output files and tables
