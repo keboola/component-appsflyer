@@ -1,0 +1,51 @@
+{
+	"type": "object",
+	"title": "Harvest Greenhouse",
+	"required": [
+	  "#api_token",
+	  "api_endpoint",
+	  "app_ids",
+	  "from_date",
+	  "to_date",
+	  "desired_reports"
+	],
+	"properties": {
+	  "#api_token": {
+		"type": "string",
+		"title": "API token",
+		"format": "password",
+		"description": "",
+		"propertyOrder": 1
+	  },
+	  "api_endpoint": {
+		"type": "string",
+		"title": "API endpoint",
+		"description": "Usually use https://hq.appsflyer.com/export/",
+		"propertyOrder": 2
+	  },
+	  "app_ids": {
+		"type": "string",
+		"title": "Application IDs",
+		"description": "Provide a list of application ids separated by comma.",
+		"propertyOrder": 3
+	  },
+	  "from_date": {
+		"type": "string",
+		"title": "From Date",
+		"description": "Provide the start date in format YYYY-MM-DD.",
+		"propertyOrder": 4
+	  },
+	  "to_date": {
+		"type": "string",
+		"title": "To Date",
+		"description": "Provide the end date in format YYYY-MM-DD.",
+		"propertyOrder": 5
+	  },
+	  "desired_reports": {
+		"type": "string",
+		"title": "Desired Reports",
+		"description": "Provide a list of reports you want to retrieve separated by comma.",
+		"propertyOrder": 6
+	  }
+	}
+  }
