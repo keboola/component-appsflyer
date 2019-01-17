@@ -5,7 +5,7 @@ import urllib.parse
 import urllib.error
 import logging
 import sys
-from datetime import datetime, timedelta
+import dateparser
 "__author__ = 'Radim Kasparek kasrad'"
 "__credits__ = 'Keboola Drak"
 "__component__ = 'AppsFlyer Extractor'"
@@ -32,33 +32,13 @@ logging.basicConfig(
 cfg = docker.Config('/data/')
 params = cfg.get_parameters()
 logging.info("params read")
+logging.info(params)
 
 # Get the parameters
-desired_reports_tmp = cfg.get_parameters()["desired_reports"]
-from_dt = cfg.get_parameters()["from_date"]  # YYYY-MM-DD
-to_dt = cfg.get_parameters()["to_date"]  # YYYY-MM-DD
-api_endpoint = cfg.get_parameters()["api_endpoint"]
 api_token = cfg.get_parameters()["#api_token"]
-app_id_tmp = cfg.get_parameters()["app_ids"]
-dayspan = int(cfg.get_parameters()["dayspan"])
-desired_reports = [i.strip() for i in desired_reports_tmp.split(",")]
-app_ids = [i.strip() for i in app_id_tmp.split(",")]
+reports = cfg.get_parameters()["reports"]
 logging.info("config successfuly read")
 
-
-if (from_dt != '' or to_dt != '') and dayspan != '':
-    logging.error(
-        "Please add either From Date and To Date, or dayspan, not both.")
-    sys.exit(1)
-elif (from_dt == '' or to_dt == '') and dayspan == '':
-    logging.error("Please add either From Date and To Date or dayspan.")
-    sys.exit(1)
-elif (from_dt != '' and to_dt != '') and dayspan == '':
-    pass
-elif (from_dt == '' or to_dt == '') and dayspan != '':
-    to_dt = datetime.today().strftime('%Y-%m-%d')
-    from_dt = (datetime.utcnow() - timedelta(days=int(dayspan)))\
-        .date().isoformat()
 
 # Destination to fetch and output files and tables
 DEFAULT_TABLE_INPUT = "/data/in/tables/"
@@ -68,7 +48,7 @@ DEFAULT_FILE_DESTINATION = "/data/out/files/"
 DEFAULT_TABLE_DESTINATION = "/data/out/tables/"
 
 
-def get_n_export_one_report(api_endpoint, api_token, app_id, report_name, from_date, to_date):
+def get_n_export_one_report(api_token, app_id, report_name, from_date, to_date):
     query_params = {
         "api_token": api_token,
         "from": str(from_date),
@@ -77,12 +57,14 @@ def get_n_export_one_report(api_endpoint, api_token, app_id, report_name, from_d
 
     query_string = urllib.parse.urlencode(query_params)
 
-    request_url = api_endpoint + app_id + "/" + report_name + "/v5?" + query_string
+    request_url = "https://hq.appsflyer.com/export/" + \
+        app_id + "/" + report_name + "/v5?" + query_string
 
     logging.info('Sending request to: ' + request_url)
 
     try:
         resp = urllib.request.urlopen(request_url)
+        bytes_data = resp.read()
     except urllib.error.HTTPError as err:
         if err.code == 401:
             logging.info('Please check the API token.')
@@ -96,33 +78,38 @@ def get_n_export_one_report(api_endpoint, api_token, app_id, report_name, from_d
             sys.exit(1)
 
     output_file = DEFAULT_TABLE_DESTINATION + \
-        "appsflyer_" + report_name + "_" + app_id + ".csv"
+        "appsflyer_" + report_name + '/' + app_id + ".csv"
     with open(output_file, "wb") as out_file:
-        out_file.write(resp.read())
+        for line in bytes_data.decode("utf-8").splitlines()[1:]:
+            out_file.write(line)
+            out_file.write('\n')
 
-        cfg.write_table_manifest(file_name=output_file,
-                                 destination='',
-                                 primary_key=['AppsFlyer_ID', 'Install_Time', 'Media_Source',
-                                              'Campaign', 'Event_Name', 'Event_Time', 'Event_Value'],
-                                 incremental=True)
+    return bytes_data[0].split(',')
 
 # main
 
 
 def main():
+    for report in reports:
+        report_name = report['name']
+        from_dt = dateparser.parse(report['from_dt']).date()
+        to_dt = dateparser.parse(report['to_dt']).date()
+        app_ids = [i.strip() for i in report['Application IDs'].split(",")]
+        for app in app_ids:
+            c_names = get_n_export_one_report(api_token=api_token,
+                                              app_id=app,
+                                              report_name=report_name,
+                                              from_date=from_dt,
+                                              to_date=to_dt)
 
-    for app_id in app_ids:
-        for report_name in desired_reports:
+        cfg.write_table_manifest(file_name="appsflyer_" + report_name,
+                                 destination='',
+                                 columns=c_names,
+                                 primary_key=['AppsFlyer_ID', 'Install_Time', 'Media_Source',
+                                              'Campaign', 'Event_Name', 'Event_Time', 'Event_Value'],
+                                 incremental=True)
 
-            get_n_export_one_report(api_endpoint=api_endpoint, api_token=api_token,
-                                    app_id=app_id, report_name=report_name, from_date=from_dt,
-                                    to_date=to_dt)
-
-            logging.info('Report ' + report_name + ' for app_id ' +
-                         app_id + ' succesfully fetched.')
-
-        logging.info('All reports for ' + app_id + ' succesfully_fetched')
-
+        logging.info('Report ' + report + ' succesfully fetched.')
     logging.info('All reports fetched')
 
 
