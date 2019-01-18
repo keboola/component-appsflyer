@@ -13,18 +13,6 @@
 				"description":"",
 				"propertyOrder":1
 		 },
-		 "from_date":{  
-				"type":"string",
-				"title":"From Date",
-				"description":"Provide the start date in format YYYY-MM-DD.",
-				"propertyOrder":4
-		 },
-		 "to_date":{  
-				"type":"string",
-				"title":"To Date",
-				"description":"Provide the end date in format YYYY-MM-DD.",
-				"propertyOrder":5
-		 },
 		 "reports":{  
 				"type":"array",
 				"items":{  
@@ -68,7 +56,7 @@
 				],
 				"description":"Report name - report name (i.e. installs_report) \n Applications IDs - IDs of the apps you want to retrieve the report for.",
 				"uniqueItems":true,
-				"propertyOrder":7
+				"propertyOrder":2
 		 }
 	}
 }

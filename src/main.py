@@ -79,7 +79,7 @@ def get_n_export_one_report(api_token, app_id, report_name, from_date, to_date):
 
     output_file = DEFAULT_TABLE_DESTINATION + \
         "appsflyer_" + report_name + '/' + app_id + ".csv"
-    with open(output_file, "wb") as out_file:
+    with open(output_file, "w") as out_file:
         for line in bytes_data.decode("utf-8").splitlines()[1:]:
             out_file.write(line)
             out_file.write('\n')
@@ -95,6 +95,7 @@ def main():
         from_dt = dateparser.parse(report['from_dt']).date()
         to_dt = dateparser.parse(report['to_dt']).date()
         app_ids = [i.strip() for i in report['Application IDs'].split(",")]
+        os.mkdir("appsflyer_" + report_name)
         for app in app_ids:
             c_names = get_n_export_one_report(api_token=api_token,
                                               app_id=app,
