@@ -95,7 +95,7 @@ def main():
         from_dt = dateparser.parse(report['from_dt']).date()
         to_dt = dateparser.parse(report['to_dt']).date()
         app_ids = [i.strip() for i in report['Application IDs'].split(",")]
-        os.mkdir("appsflyer_" + report_name)
+        os.mkdir(DEFAULT_TABLE_DESTINATION + "/appsflyer_" + report_name)
         for app in app_ids:
             c_names = get_n_export_one_report(api_token=api_token,
                                               app_id=app,
