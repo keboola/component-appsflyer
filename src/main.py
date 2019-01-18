@@ -110,7 +110,7 @@ def main():
                                               'Campaign', 'Event_Name', 'Event_Time', 'Event_Value'],
                                  incremental=True)
 
-        logging.info('Report ' + report + ' succesfully fetched.')
+        logging.info('Report ' + report_name + ' succesfully fetched.')
     logging.info('All reports fetched')
 
 
