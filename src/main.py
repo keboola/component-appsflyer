@@ -21,7 +21,7 @@ abspath = os.path.abspath(__file__)
 script_path = os.path.dirname(abspath)
 os.chdir(script_path)
 
-sys.tracebacklimit = None
+sys.tracebacklimit = 0
 
 # Logging
 logging.basicConfig(
@@ -50,6 +50,12 @@ DEFAULT_TABLE_DESTINATION = "/data/out/tables/"
 
 
 def get_n_export_one_report(api_token, app_id, report_name, from_date, to_date):
+    '''
+    function for getting and exporting one report per one app_id
+    from_date - YYYY-MM-DD
+    to_date - YYYY-MM-DD
+    '''
+
     query_params = {
         "api_token": api_token,
         "from": str(from_date),
@@ -81,11 +87,14 @@ def get_n_export_one_report(api_token, app_id, report_name, from_date, to_date):
     output_file = DEFAULT_TABLE_DESTINATION + \
         "appsflyer_" + report_name + '/' + app_id + ".csv"
     logging.info(output_file)
+
+    # writes the file without the first row, i.e. writes headless file
     with open(output_file, "w") as out_file:
         for line in bytes_data.decode("utf-8").splitlines()[1:]:
             out_file.write(line)
             out_file.write('\n')
 
+    # returns the colnames of the file
     return str(bytes_data.decode("utf-8").splitlines()[0]).split(',')
 
 
@@ -95,7 +104,7 @@ def save_manifest(report_name, cols, primary_keys):
     """
 
     file = '/data/out/tables/' + "appsflyer_" + report_name + ".manifest"
-    logging.info(file)
+
     logging.info("Manifest output: {0}".format(file))
 
     manifest = {
@@ -108,7 +117,7 @@ def save_manifest(report_name, cols, primary_keys):
     try:
         with open(file, 'w') as file_out:
             json.dump(manifest, file_out)
-            # logging.info("Output manifest file ({0}) produced.".format(file_name))
+            logging.info("Output manifest file ({0}) produced.".format(file))
     except Exception as e:
         logging.error("Could not produce output file manifest.")
         logging.error(e)
@@ -119,6 +128,10 @@ def save_manifest(report_name, cols, primary_keys):
 
 
 def main():
+    '''
+    for each report the data from all apps are collected, written into the storage as sliced files
+    and finally a manifest is produced
+    '''
     for report in reports:
         report_name = report['name']
         primary_keys = ['AppsFlyer_ID', 'Install_Time', 'Media_Source',
@@ -133,7 +146,6 @@ def main():
                                               report_name=report_name,
                                               from_date=from_dt,
                                               to_date=to_dt)
-        logging.info(c_names)
         save_manifest(report_name=report_name, cols=c_names,
                       primary_keys=primary_keys)
 
