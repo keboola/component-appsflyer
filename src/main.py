@@ -6,6 +6,7 @@ import urllib.error
 import logging
 import sys
 import dateparser
+import json
 "__author__ = 'Radim Kasparek kasrad'"
 "__credits__ = 'Keboola Drak"
 "__component__ = 'AppsFlyer Extractor'"
@@ -79,6 +80,7 @@ def get_n_export_one_report(api_token, app_id, report_name, from_date, to_date):
 
     output_file = DEFAULT_TABLE_DESTINATION + \
         "appsflyer_" + report_name + '/' + app_id + ".csv"
+    logging.info(output_file)
     with open(output_file, "w") as out_file:
         for line in bytes_data.decode("utf-8").splitlines()[1:]:
             out_file.write(line)
@@ -86,12 +88,41 @@ def get_n_export_one_report(api_token, app_id, report_name, from_date, to_date):
 
     return str(bytes_data.decode("utf-8").splitlines()[0]).split(',')
 
+
+def save_manifest(report_name, cols, primary_keys):
+    """
+    Dummy function for returning manifest
+    """
+
+    file = '/data/out/tables/' + "appsflyer_" + report_name + ".manifest"
+    logging.info(file)
+    logging.info("Manifest output: {0}".format(file))
+
+    manifest = {
+        'destination': '',
+        'columns': cols,
+        'incremental': True,
+        'primary_key': primary_keys
+    }
+
+    try:
+        with open(file, 'w') as file_out:
+            json.dump(manifest, file_out)
+            # logging.info("Output manifest file ({0}) produced.".format(file_name))
+    except Exception as e:
+        logging.error("Could not produce output file manifest.")
+        logging.error(e)
+
+    return
+
 # main
 
 
 def main():
     for report in reports:
         report_name = report['name']
+        primary_keys = ['AppsFlyer_ID', 'Install_Time', 'Media_Source',
+                        'Campaign', 'Event_Name', 'Event_Time', 'Event_Value']
         from_dt = dateparser.parse(report['from_dt']).date()
         to_dt = dateparser.parse(report['to_dt']).date()
         app_ids = [i.strip() for i in report['Application IDs'].split(",")]
@@ -102,13 +133,9 @@ def main():
                                               report_name=report_name,
                                               from_date=from_dt,
                                               to_date=to_dt)
-
-        cfg.write_table_manifest(file_name="appsflyer_" + report_name,
-                                 destination='',
-                                 columns=c_names,
-                                 primary_key=['AppsFlyer_ID', 'Install_Time', 'Media_Source',
-                                              'Campaign', 'Event_Name', 'Event_Time', 'Event_Value'],
-                                 incremental=True)
+        logging.info(c_names)
+        save_manifest(report_name=report_name, cols=c_names,
+                      primary_keys=primary_keys)
 
         logging.info('Report ' + report_name + ' succesfully fetched.')
     logging.info('All reports fetched')
