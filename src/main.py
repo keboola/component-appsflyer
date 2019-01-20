@@ -84,7 +84,7 @@ def get_n_export_one_report(api_token, app_id, report_name, from_date, to_date):
             out_file.write(line)
             out_file.write('\n')
 
-    return str(bytes_data[0]).split(',')
+    return str(bytes_data.decode("utf-8").splitlines()[0]).split(',')
 
 # main
 
