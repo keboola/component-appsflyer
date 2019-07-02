@@ -95,6 +95,8 @@ def get_n_export_one_report(api_token, app_id, report_name, from_date, to_date):
             out_file.write('\n')
 
     # returns the colnames of the file
+    logging.info('The lenght of the first line is: ', len(
+        bytes_data.decode("utf-8").splitlines()[0]))
     return str(bytes_data.decode("utf-8").splitlines()[0]).split(',')
 
 
