@@ -84,8 +84,10 @@ def get_n_export_one_report(api_token, app_id, report_name, from_date, to_date):
             logging.info('The error code is ' + str(err.code))
             sys.exit(1)
 
-    output_file = DEFAULT_TABLE_DESTINATION + \
-        "appsflyer_" + report_name + '/' + app_id + ".csv"
+    if (len(bytes_data.decode("utf-8").splitlines())) == 0:
+        return 1
+
+    output_file = DEFAULT_TABLE_DESTINATION + "appsflyer_" + report_name + '/' + app_id + ".csv"
     logging.info(output_file)
 
     # writes the file without the first row, i.e. writes headless file
@@ -136,7 +138,7 @@ def main():
     '''
     for report in reports:
         report_name = report['name']
-        primary_keys = report['Primary Key']
+        primary_keys = [i.strip() for i in report['Primary Key'].split(",")]
         from_dt = dateparser.parse(report['from_dt']).date()
         to_dt = dateparser.parse(report['to_dt']).date()
         app_ids = [i.strip() for i in report['Application IDs'].split(",")]
@@ -147,7 +149,11 @@ def main():
                                               report_name=report_name,
                                               from_date=from_dt,
                                               to_date=to_dt)
-        save_manifest(report_name=report_name, cols=c_names,
+            if c_names == 1:
+                continue
+            else:
+                colnames = c_names
+        save_manifest(report_name=report_name, cols=colnames,
                       primary_keys=primary_keys)
 
         logging.info('Report ' + report_name + ' succesfully fetched.')
