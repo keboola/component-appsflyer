@@ -136,8 +136,7 @@ def main():
     '''
     for report in reports:
         report_name = report['name']
-        primary_keys = ['AppsFlyer_ID', 'Install_Time', 'Media_Source',
-                        'Campaign', 'Event_Name', 'Event_Time', 'Event_Value']
+        primary_keys = report['Primary Key']
         from_dt = dateparser.parse(report['from_dt']).date()
         to_dt = dateparser.parse(report['to_dt']).date()
         app_ids = [i.strip() for i in report['Application IDs'].split(",")]
