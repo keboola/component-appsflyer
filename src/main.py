@@ -4,6 +4,8 @@ import urllib.request
 import urllib.parse
 import urllib.error
 import logging
+import logging_gelf.handlers
+import logging_gelf.formatters
 import sys
 import dateparser
 import json
@@ -28,6 +30,19 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     datefmt="%Y-%m-%d %H:%M:%S")
+
+if 'KBC_LOGGER_ADDR' in os.environ and 'KBC_LOGGER_PORT' in os.environ:
+
+    logger = logging.getLogger()
+    logging_gelf_handler = logging_gelf.handlers.GELFTCPSocketHandler(
+        host=os.getenv('KBC_LOGGER_ADDR'),
+        port=int(os.getenv('KBC_LOGGER_PORT'))
+        )
+    logging_gelf_handler.setFormatter(logging_gelf.formatters.GELFFormatter(null_character=True))
+    logger.addHandler(logging_gelf_handler)
+
+    # removes the initial stdout logging
+    logger.removeHandler(logger.handlers[0])
 
 # Access the supplied rules
 cfg = docker.Config('/data/')
