@@ -1,62 +1,77 @@
-{  
-	"type":"object",
-	"title":"AppsFlyer",
-	"required":[  
-		 "#api_token",
-		 "reports"
-	],
-	"properties":{  
-		 "#api_token":{  
-				"type":"string",
-				"title":"API token",
-				"format":"password",
-				"description":"",
-				"propertyOrder":1
-		 },
-		 "reports":{  
-				"type":"array",
-				"items":{  
-					 "type":"object",
-					 "title":"Object",
-					 "properties":{  
-							"name":{  
-								 "type":"string",
-								 "title":"Report Name",
-								 "propertyOrder":1
-							},
-							"Applications IDs":{  
-								 "type":"string",
-								 "title":"Applications IDs",
-								 "default":"",
-								 "propertyOrder":2
-							},
-"from_dt":{  
-								 "type":"string",
-								 "title":"Start Date",
-								 "default":"",
-								 "propertyOrder":3
-							},
-"to_dt":{  
-								 "type":"string",
-								 "title":"End Date",
-								 "default":"",
-								 "propertyOrder":3
-							}
-					 }
-				},
-				"title":"Reports",
-				"format":"table",
-				"default":[  
-					 {  
-							"name":"1",
-							"Applications IDs":"",
-"from_dt":"7 days ago",
-"to_dt":"today"
-					 }
-				],
-				"description":"Report name - report name (i.e. installs_report) \n Applications IDs - IDs of the apps you want to retrieve the report for.",
-				"uniqueItems":true,
-				"propertyOrder":2
-		 }
-	}
+{
+    "type": "object",
+    "title": "AppsFlyer",
+    "required": [
+        "#api_token",
+        "reports"
+    ],
+    "properties": {
+        "reports": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "title": "Object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "title": "Report Name",
+                        "propertyOrder": 1
+					},
+					"Application IDs": {
+                        "type": "string",
+                        "title": "Applications IDs",
+                        "default": "",
+                        "propertyOrder": 2
+					},
+					"from_dt": {
+                        "type": "string",
+                        "title": "Start Date",
+                        "default": "",
+                        "propertyOrder": 3
+                    },
+                    "to_dt": {
+                        "type": "string",
+                        "title": "End Date",
+                        "default": "",
+                        "propertyOrder": 4
+                    },
+                    "Primary Key": {
+                        "type": "string",
+                        "title": "Primary Key",
+                        "default": "",
+                        "propertyOrder": 5
+					},
+					"reattr": {
+						"type": "boolean",
+						"title": "Attribute to retargeting campaigns",
+						"default": false,
+						"propertyOrder": 6
+
+					}
+                }
+            },
+            "title": "Reports",
+            "format": "table",
+            "default": [
+                {
+                    "name": "1",
+                    "to_dt": "today",
+                    "from_dt": "7 days ago",
+                    "Primary Key": "AppsFlyer_ID, Install_Time, Media_Source, Campaign, Event_Name, Event_Time, Event_Value",
+					"Application IDs": "",
+					"reattr": false
+                }
+            ],
+            "description": "Report name - report name (i.e. installs_report) ||| Applications IDs - IDs of the apps you want to retrieve the report for ||| Start & End Date - you can use either absolute dates YYYY-MM-DD or relative dates like < today, yesterday, 7 days ago etc. > For complete list of dates the component accepts please refer here: https://github.com/scrapinghub/dateparser",
+            "uniqueItems": true,
+            "propertyOrder": 2
+        },
+        "#api_token": {
+            "type": "string",
+            "title": "API token",
+            "format": "password",
+            "description": "User's external API Authorization Key, account owner API Key should be used",
+            "propertyOrder": 1
+        }
+    }
 }

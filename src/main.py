@@ -7,6 +7,7 @@ import logging
 import logging_gelf.handlers
 import logging_gelf.formatters
 import sys
+import datetime
 import dateparser
 import json
 "__author__ = 'Radim Kasparek kasrad'"
@@ -37,8 +38,9 @@ if 'KBC_LOGGER_ADDR' in os.environ and 'KBC_LOGGER_PORT' in os.environ:
     logging_gelf_handler = logging_gelf.handlers.GELFTCPSocketHandler(
         host=os.getenv('KBC_LOGGER_ADDR'),
         port=int(os.getenv('KBC_LOGGER_PORT'))
-        )
-    logging_gelf_handler.setFormatter(logging_gelf.formatters.GELFFormatter(null_character=True))
+    )
+    logging_gelf_handler.setFormatter(
+        logging_gelf.formatters.GELFFormatter(null_character=True))
     logger.addHandler(logging_gelf_handler)
 
     # removes the initial stdout logging
@@ -64,7 +66,8 @@ DEFAULT_FILE_DESTINATION = "/data/out/files/"
 DEFAULT_TABLE_DESTINATION = "/data/out/tables/"
 
 
-def get_n_export_one_report(api_token, app_id, report_name, from_date, to_date):
+def get_n_export_one_report(api_token, app_id, report_name, date, reattr):
+    # from_date, to_date, reattr):
     '''
     function for getting and exporting one report per one app_id
     from_date - YYYY-MM-DD
@@ -73,14 +76,18 @@ def get_n_export_one_report(api_token, app_id, report_name, from_date, to_date):
 
     query_params = {
         "api_token": api_token,
-        "from": str(from_date),
-        "to": str(to_date)
+        "from": str(date),
+        "to": str(date)
     }
 
     query_string = urllib.parse.urlencode(query_params)
 
     request_url = "https://hq.appsflyer.com/export/" + \
         app_id + "/" + report_name + "/v5?" + query_string
+
+    # Adding the optino to attribute retargeting campaigns
+    if bool(reattr):
+        request_url = request_url + '&reattr=true'
 
     logging.info('Sending request to: ' + request_url)
 
@@ -102,7 +109,8 @@ def get_n_export_one_report(api_token, app_id, report_name, from_date, to_date):
     if (len(bytes_data.decode("utf-8").splitlines())) == 0:
         return 1
 
-    output_file = DEFAULT_TABLE_DESTINATION + "appsflyer_" + report_name + '/' + app_id + ".csv"
+    output_file = DEFAULT_TABLE_DESTINATION + \
+        "appsflyer_" + report_name + '/' + app_id + "-{}.csv".format(date)
     logging.info(output_file)
 
     # writes the file without the first row, i.e. writes headless file
@@ -113,6 +121,37 @@ def get_n_export_one_report(api_token, app_id, report_name, from_date, to_date):
 
     # returns the colnames of the file
     return str(bytes_data.decode("utf-8").splitlines()[0]).split(',')
+
+
+def dates_request(start_date, end_date):
+    """
+    return a list of dates within the given parameters
+    """
+    dates = []
+
+    try:
+        start_date_form = dateparser.parse(start_date)
+        end_date_form = dateparser.parse(end_date)
+        day_diff = (end_date_form-start_date_form).days
+        if day_diff < 0:
+            logging.error("ERROR: start_date cannot exceed end_date. ",
+                          "Please correct your inputs.")
+            sys.exit(1)
+        temp_date = start_date_form
+        day_n = 0
+        if day_diff == 0:
+            dates.append(temp_date.strftime("%Y-%m-%d"))
+        while day_n < day_diff:
+            dates.append(temp_date.strftime("%Y-%m-%d"))
+            temp_date += datetime.timedelta(days=1)
+            day_n += 1
+            if day_n == day_diff:
+                dates.append(temp_date.strftime("%Y-%m-%d"))
+    except TypeError:
+        logging.error("ERROR: Please enter valid date parameters")
+        sys.exit(1)
+
+    return dates
 
 
 def save_manifest(report_name, cols, primary_keys):
@@ -150,22 +189,32 @@ def main():
     and finally a manifest is produced
     '''
     for report in reports:
+        # Report Parameters
         report_name = report['name']
+        reattr = report['reattr']
         primary_keys = [i.strip() for i in report['Primary Key'].split(",")]
-        from_dt = dateparser.parse(report['from_dt']).date()
-        to_dt = dateparser.parse(report['to_dt']).date()
         app_ids = [i.strip() for i in report['Application IDs'].split(",")]
+        # from_dt = dateparser.parse(report['from_dt']).date()
+        # to_dt = dateparser.parse(report['to_dt']).date()
+        date_list = dates_request(start_date=report['from_dt'],
+                                  end_date=report['to_dt'])
+
+        # Creating Folder for sliced files
         os.mkdir(DEFAULT_TABLE_DESTINATION + "/appsflyer_" + report_name)
+
         for app in app_ids:
-            c_names = get_n_export_one_report(api_token=api_token,
-                                              app_id=app,
-                                              report_name=report_name,
-                                              from_date=from_dt,
-                                              to_date=to_dt)
-            if c_names == 1:
-                continue
-            else:
-                colnames = c_names
+            for date in date_list:
+                c_names = get_n_export_one_report(api_token=api_token,
+                                                  app_id=app,
+                                                  report_name=report_name,
+                                                  date=date,
+                                                  # from_date=from_dt,
+                                                  # to_date=to_dt,
+                                                  reattr=reattr)
+                if c_names == 1:
+                    continue
+                else:
+                    colnames = c_names
         save_manifest(report_name=report_name, cols=colnames,
                       primary_keys=primary_keys)
 
