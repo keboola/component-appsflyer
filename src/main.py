@@ -66,7 +66,7 @@ DEFAULT_FILE_DESTINATION = "/data/out/files/"
 DEFAULT_TABLE_DESTINATION = "/data/out/tables/"
 
 
-def get_n_export_one_report(api_token, app_id, report_name, date, reattr):
+def get_n_export_one_report(api_token, app_id, report_name, date, reattr, filter_by_event_name, filter_by_media_source):
     # from_date, to_date, reattr):
     '''
     function for getting and exporting one report per one app_id
@@ -81,6 +81,24 @@ def get_n_export_one_report(api_token, app_id, report_name, date, reattr):
     }
 
     query_string = urllib.parse.urlencode(query_params)
+    # Handling Filters
+    # Event Name
+    if len(filter_by_event_name) > 0:
+        event_names = '&event_name={}'.format(
+            filter_by_event_name[0]['event_name'].replace(' ', ''))
+        query_string = query_string + event_names
+
+    # Media Source
+    if len(filter_by_media_source) > 0:
+        category = filter_by_media_source[0]['category']
+        media_source = filter_by_media_source[0]['media_source']
+        if category == '' or media_source == '':
+            logging.error(
+                'Media\'s category and media_source cannot be empty.')
+            sys.exit(1)
+        media_source_config = '&category={}&media_source={}'.format(
+            category, media_source)
+        query_string = query_string + media_source_config
 
     request_url = "https://hq.appsflyer.com/export/" + \
         app_id + "/" + report_name + "/v5?" + query_string
@@ -128,15 +146,24 @@ def dates_request(start_date, end_date):
     return a list of dates within the given parameters
     """
     dates = []
+    three_months_limit = dateparser.parse('3 months ago')
 
     try:
         start_date_form = dateparser.parse(start_date)
         end_date_form = dateparser.parse(end_date)
         day_diff = (end_date_form-start_date_form).days
+
+        # End date cannot exceed start_date
         if day_diff < 0:
             logging.error("ERROR: start_date cannot exceed end_date. ",
                           "Please correct your inputs.")
             sys.exit(1)
+        # start date cannot exceed 3 months limit from today
+        if start_date_form.strftime("%Y-%m-%d") < three_months_limit.strftime("%Y-%m-%d"):
+            logging.error(
+                "ERROR: API Querying date range is limited to past 3 months.")
+            sys.exit(1)
+
         temp_date = start_date_form
         day_n = 0
         if day_diff == 0:
@@ -194,10 +221,12 @@ def main():
         reattr = report['reattr']
         primary_keys = [i.strip() for i in report['Primary Key'].split(",")]
         app_ids = [i.strip() for i in report['Application IDs'].split(",")]
-        # from_dt = dateparser.parse(report['from_dt']).date()
-        # to_dt = dateparser.parse(report['to_dt']).date()
         date_list = dates_request(start_date=report['from_dt'],
                                   end_date=report['to_dt'])
+
+        # Report Filter Parameters
+        filter_by_event_name = report['filter_by_event_name']
+        filter_by_media_source = report['filter_by_media_source']
 
         # Creating Folder for sliced files
         os.mkdir(DEFAULT_TABLE_DESTINATION + "/appsflyer_" + report_name)
@@ -208,9 +237,9 @@ def main():
                                                   app_id=app,
                                                   report_name=report_name,
                                                   date=date,
-                                                  # from_date=from_dt,
-                                                  # to_date=to_dt,
-                                                  reattr=reattr)
+                                                  reattr=reattr,
+                                                  filter_by_event_name=filter_by_event_name,
+                                                  filter_by_media_source=filter_by_media_source)
                 if c_names == 1:
                     continue
                 else:

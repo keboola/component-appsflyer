@@ -8,10 +8,9 @@
     "properties": {
         "reports": {
             "type": "array",
-            "title": "Reports",
             "items": {
                 "type": "object",
-                "title": "Report",
+                "title": "Object",
                 "properties": {
                     "name": {
                         "type": "string",
@@ -28,14 +27,12 @@
                         "type": "string",
                         "title": "Start Date",
                         "default": "",
-                        "description": "API querying date range is limited to past 3 months",
                         "propertyOrder": 3
                     },
                     "to_dt": {
                         "type": "string",
                         "title": "End Date",
                         "default": "",
-                        "description": "API querying date range is limited to past 3 months",
                         "propertyOrder": 4
                     },
                     "Primary Key": {
@@ -50,46 +47,11 @@
 						"default": false,
 						"propertyOrder": 6
 
-                    },
-                    "filter_by_event_name": {
-                        "type": "array",
-                        "maxItems": 1,
-                        "format": "table",
-                        "title": "Filter by event name",
-                        "propertyOrder": 7,
-                        "description": "To filter multiple events use a comma separated list of events.",
-                        "items": {
-                            "type": "object",
-                            "title": "Filter by event name",
-                            "properties": {
-                                "event_name": {
-                                    "type": "string",
-                                    "title": "Event Names"
-                                }
-                            }
-                        }
-                    },
-                    "filter_by_media_source": {
-                        "type": "array",
-                        "maxItems": 1,
-                        "format": "table",
-                        "title": "Filter by media source",
-                        "propertyOrder": 8,
-                        "items": {
-                            "type": "object",
-                            "title": "Filter by media source",
-                            "properties": {
-                                "category": {
-                                    "type": "string"
-                                },
-                                "media_source": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    }
+					}
                 }
             },
+            "title": "Reports",
+            "format": "table",
             "default": [
                 {
                     "name": "1",
@@ -97,9 +59,7 @@
                     "from_dt": "7 days ago",
                     "Primary Key": "AppsFlyer_ID, Install_Time, Media_Source, Campaign, Event_Name, Event_Time, Event_Value",
 					"Application IDs": "",
-                    "reattr": false,
-                    "filter_by_event_name": [],
-                    "filter_by_media_source": []
+					"reattr": false
                 }
             ],
             "description": "Report name - report name (i.e. installs_report) ||| Applications IDs - IDs of the apps you want to retrieve the report for ||| Start & End Date - you can use either absolute dates YYYY-MM-DD or relative dates like < today, yesterday, 7 days ago etc. > For complete list of dates the component accepts please refer here: https://github.com/scrapinghub/dateparser",
