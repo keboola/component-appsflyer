@@ -225,8 +225,14 @@ def main():
                                   end_date=report['to_dt'])
 
         # Report Filter Parameters
-        filter_by_event_name = report['filter_by_event_name']
-        filter_by_media_source = report['filter_by_media_source']
+        if 'filter_by_event_name' in report:
+            filter_by_event_name = report['filter_by_event_name']
+        else:
+            filter_by_event_name = []
+        if 'filter_by_media_source' in report:
+            filter_by_media_source = report['filter_by_media_source']
+        else:
+            filter_by_media_source = []
 
         # Creating Folder for sliced files
         os.mkdir(DEFAULT_TABLE_DESTINATION + "/appsflyer_" + report_name)
