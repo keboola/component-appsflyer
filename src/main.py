@@ -114,14 +114,14 @@ def get_n_export_one_report(api_token, app_id, report_name, date, reattr, filter
         bytes_data = resp.read()
     except urllib.error.HTTPError as err:
         if err.code == 401:
-            logging.info('Please check the API token.')
+            logging.error('Please check the API token.')
             sys.exit(1)
         elif err.code == 404:
-            logging.info(
+            logging.error(
                 'The page was not found. Please check the parameters.')
             sys.exit(1)
         else:
-            logging.info('Error Code: {}'.format(err))
+            logging.error('Error Code: {}'.format(err))
             sys.exit(1)
 
     if (len(bytes_data.decode("utf-8").splitlines())) == 0:
