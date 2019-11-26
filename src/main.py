@@ -218,6 +218,9 @@ def main():
     for report in reports:
         # Report Parameters
         report_name = report['name']
+        logging.info("Processing {} - {} to {}".format(report_name,
+                                                       report['from_dt'], report['to_dt']))
+
         reattr = report['reattr']
         primary_keys = [i.strip() for i in report['Primary Key'].split(",")]
         app_ids = [i.strip() for i in report['Application IDs'].split(",")]
