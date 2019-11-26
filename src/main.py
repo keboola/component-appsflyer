@@ -121,7 +121,7 @@ def get_n_export_one_report(api_token, app_id, report_name, date, reattr, filter
                 'The page was not found. Please check the parameters.')
             sys.exit(1)
         else:
-            logging.info('The error code is ' + str(err.code))
+            logging.info('Error Code: {}'.format(err))
             sys.exit(1)
 
     if (len(bytes_data.decode("utf-8").splitlines())) == 0:

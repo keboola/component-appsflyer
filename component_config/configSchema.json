@@ -27,14 +27,14 @@
 					"from_dt": {
                         "type": "string",
                         "title": "Start Date",
-                        "default": "",
+                        "default": "-1 days",
                         "description": "API querying date range is limited to past 3 months",
                         "propertyOrder": 3
                     },
                     "to_dt": {
                         "type": "string",
                         "title": "End Date",
-                        "default": "",
+                        "default": "-1 days",
                         "description": "API querying date range is limited to past 3 months",
                         "propertyOrder": 4
                     },
@@ -74,6 +74,7 @@
                         "maxItems": 1,
                         "format": "table",
                         "title": "Filter by media source",
+                        "description": "Configuration Details: https://support.appsflyer.com/hc/en-us/articles/207034346-Pulling-reports-using-Pull-API#raw-data-filter-by-media-source",
                         "propertyOrder": 8,
                         "items": {
                             "type": "object",
