@@ -66,7 +66,7 @@ DEFAULT_FILE_DESTINATION = "/data/out/files/"
 DEFAULT_TABLE_DESTINATION = "/data/out/tables/"
 
 
-def get_n_export_one_report(api_token, app_id, report_name, date, reattr, filter_by_event_name, filter_by_media_source):
+def get_n_export_one_report(api_token, app_id, folder_name, report_name, date, reattr, filter_by_event_name, filter_by_media_source):
     # from_date, to_date, reattr):
     '''
     function for getting and exporting one report per one app_id
@@ -129,6 +129,7 @@ def get_n_export_one_report(api_token, app_id, report_name, date, reattr, filter
 
     output_file = DEFAULT_TABLE_DESTINATION + \
         "appsflyer_" + report_name + '/' + app_id + "-{}.csv".format(date)
+    output_file = '{}/{}-{}.csv'.format(folder_name, app_id, date)
     logging.info(output_file)
 
     # writes the file without the first row, i.e. writes headless file
@@ -238,12 +239,16 @@ def main():
             filter_by_media_source = []
 
         # Creating Folder for sliced files
-        os.mkdir(DEFAULT_TABLE_DESTINATION + "/appsflyer_" + report_name)
+        folder_name = DEFAULT_TABLE_DESTINATION + "/appsflyer_" + report_name
+        if bool(report['reattr']):
+            folder_name = folder_name + '_reattr'
+        os.mkdir(folder_name)
 
         for app in app_ids:
             for date in date_list:
                 c_names = get_n_export_one_report(api_token=api_token,
                                                   app_id=app,
+                                                  folder_name=folder_name,
                                                   report_name=report_name,
                                                   date=date,
                                                   reattr=reattr,
