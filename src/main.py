@@ -66,7 +66,8 @@ DEFAULT_FILE_DESTINATION = "/data/out/files/"
 DEFAULT_TABLE_DESTINATION = "/data/out/tables/"
 
 
-def get_n_export_one_report(api_token, app_id, folder_name, report_name, date, reattr, filter_by_event_name, filter_by_media_source):
+def get_n_export_one_report(api_token, app_id, folder_name, report_name, date, reattr,
+                            filter_by_event_name, filter_by_media_source):
     # from_date, to_date, reattr):
     '''
     function for getting and exporting one report per one app_id
