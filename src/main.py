@@ -261,6 +261,8 @@ def main():
                     continue
                 else:
                     colnames = c_names
+        if bool(report['reattr']):
+            report_name = report_name + '_reattr'
         save_manifest(report_name=report_name, cols=colnames,
                       primary_keys=primary_keys)
 
