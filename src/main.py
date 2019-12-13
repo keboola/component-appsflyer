@@ -125,7 +125,8 @@ def get_n_export_one_report(api_token, app_id, folder_name, report_name, date, r
             logging.error('Error Code: {}'.format(err))
             logging.error('Due to API limit, extractor has stopped fetching data from [{}] for Report [{}]'.format(
                 date, report_name))
-            sys.exit(0)
+            # sys.exit(0)
+            return 999
 
     if (len(bytes_data.decode("utf-8").splitlines())) == 0:
         return 1
@@ -259,6 +260,8 @@ def main():
                                                   filter_by_media_source=filter_by_media_source)
                 if c_names == 1:
                     continue
+                elif c_names == 999:
+                    break
                 else:
                     colnames = c_names
         if bool(report['reattr']):
