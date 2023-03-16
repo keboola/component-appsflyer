@@ -3,6 +3,7 @@ from requests import HTTPError
 from typing import List, Dict
 from requests.exceptions import RetryError
 import requests
+import logging
 
 BASE_URL = "https://hq.appsflyer.com/export/"
 
@@ -61,6 +62,7 @@ class AppsFlyerClient(HttpClient):
                 f"Check if App ID '{app_id}' is valid.\n"
                 f"Check if query_params are valid {query_params}")
         elif report.status_code == 401:
+            logging.error(report.text)
             raise AppsFlyerClientException(f"Error occurred : {report.reason}. Check if your API token is valid")
         elif report.status_code not in [200]:
             raise AppsFlyerClientException(f"Error occurred : {report.reason}. {report.text}")
