@@ -5,8 +5,6 @@ from requests.exceptions import RetryError
 import requests
 import logging
 
-BASE_URL = "https://hq.appsflyer.com/export/"
-
 API_VERSION = "v5"
 
 MAX_TIMEOUT_FOR_REQUEST = 1000
@@ -22,7 +20,15 @@ class AppsFlyerClient(HttpClient):
         if token_type not in ["v1", "v2"]:
             raise ValueError("token_type must be either 'v1' or 'v2'")
         self.token_type = token_type
-        super().__init__(BASE_URL, max_retries=5, status_forcelist=(500, 502, 504))
+
+        if token_type == "v1":
+            base_url = "https://hq.appsflyer.com/export/"
+            logging.info("Using V1 base url.")
+        else:
+            base_url = "https://hq1.appsflyer.com/api/raw-data/export/app/"
+            logging.info("Using V2 base url.")
+
+        super().__init__(base_url, max_retries=5, status_forcelist=(500, 502, 504))
 
     def get_app_daily_report(self,
                              report_name: str,
@@ -40,13 +46,14 @@ class AppsFlyerClient(HttpClient):
                 "to": date.get("end_date")
             }
         else:
-            headers = {"Authorization": "Bearer " + self.api_token}
+            headers = {"authorization": "Bearer " + self.api_token}
             query_params = {
                 "from": date.get("start_date"),
                 "to": date.get("end_date")
             }
 
         endpoint = "/".join([app_id, report_name, API_VERSION])
+        print(self.base_url+endpoint)
 
         if len(filter_by_event_name) > 0:
             query_params["event_name"] = filter_by_event_name[0]['event_name'].replace(' ', '')
@@ -73,6 +80,8 @@ class AppsFlyerClient(HttpClient):
                                       params=query_params,
                                       timeout=MAX_TIMEOUT_FOR_REQUEST,
                                       headers=headers)
+
+            report.raise_for_status()
 
         except (HTTPError, RetryError) as http_error:
             raise AppsFlyerClientException(http_error) from http_error

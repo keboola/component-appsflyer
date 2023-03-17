@@ -76,6 +76,8 @@ class Component(ComponentBase):
         self.create_sliced_directory(table.full_path)
 
         for i, generated_report in enumerate(self.get_single_reports(client, interval_days, report)):
+            print(generated_report)
+            exit()
             output_file = path.join(table.full_path,
                                     f"{report.app_id}-{interval_days[i].get('start_date')}-"
                                     f"{interval_days[i].get('end_date')}.csv")
