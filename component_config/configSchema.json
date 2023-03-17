@@ -113,14 +113,41 @@
       ],
       "description": "Report name - report name (i.e. installs_report) ||| Applications IDs - IDs of the apps you want to retrieve the report for ||| Start & End Date - you can use either absolute dates YYYY-MM-DD or relative dates like < today, yesterday, 7 days ago etc. > For complete list of dates the component accepts please refer here: https://github.com/scrapinghub/dateparser",
       "uniqueItems": true,
-      "propertyOrder": 2
+      "propertyOrder": 10
+    },
+    "token_type": {
+      "type": "string",
+      "title": "API token",
+      "enum": [
+        "v1",
+        "v2"
+      ],
+      "description": "API token V1 will be deprecated on <a href=https://support.appsflyer.com/hc/en-us/articles/12399683708305-Bulletin-API-token-changes>May 31, 2023</a>",
+      "propertyOrder": 1
     },
     "#api_token": {
       "type": "string",
-      "title": "API token",
+      "title": "API token v1",
       "format": "password",
       "description": "User's external API Authorization Key, account owner API Key should be used",
-      "propertyOrder": 1
+            "options": {
+        "dependencies": {
+          "token_type": "v1"
+        }
+      },
+      "propertyOrder": 2
+    },
+    "#api_token_v2": {
+      "type": "string",
+      "title": "API token v2",
+      "format": "password",
+      "description": "User's external API V2 Authorization Key, account owner API V2 Key should be used",
+                  "options": {
+        "dependencies": {
+          "token_type": "v2"
+        }
+      },
+      "propertyOrder": 3
     }
   }
 }

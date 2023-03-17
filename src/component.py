@@ -12,10 +12,10 @@ from keboola.component.exceptions import UserException
 from appsflyer import AppsFlyerClient, AppsFlyerClientException, AppsflyerReport, create_report_object
 
 KEY_API_TOKEN = '#api_token'
+KEY_API_TOKEN_V2 = '#api_token_v2'
 KEY_REPORTS = 'reports'
 
-REQUIRED_PARAMETERS: List = [KEY_API_TOKEN]
-REQUIRED_IMAGE_PARS: List = []
+REQUIRED_PARAMETERS = []
 
 warnings.filterwarnings(
     "ignore",
@@ -31,13 +31,17 @@ class Component(ComponentBase):
 
     def run(self):
         self.validate_configuration_parameters(REQUIRED_PARAMETERS)
-        self.validate_image_parameters(REQUIRED_IMAGE_PARS)
+
         params = self.configuration.parameters
+        api_token = params.get(KEY_API_TOKEN_V2, None)
+        token_type = "v2" if api_token else "v1"
+        api_token = api_token or params.get(KEY_API_TOKEN, None)
+        if not api_token:
+            raise UserException("API token V1 or V2 must be specified in config parameters.")
 
-        api_token = params.get(KEY_API_TOKEN)
-        reports = params.get(KEY_REPORTS)
+        reports = params.get(KEY_REPORTS, [])
 
-        client = AppsFlyerClient(api_token)
+        client = AppsFlyerClient(api_token, token_type)
 
         for report in reports:
             self.fetch_report(client, report)

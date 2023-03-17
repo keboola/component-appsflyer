@@ -17,8 +17,11 @@ class AppsFlyerClientException(Exception):
 
 
 class AppsFlyerClient(HttpClient):
-    def __init__(self, api_token: str) -> None:
+    def __init__(self, api_token: str, token_type: str) -> None:
         self.api_token = api_token
+        if token_type not in ["v1", "v2"]:
+            raise ValueError("token_type must be either 'v1' or 'v2'")
+        self.token_type = token_type
         super().__init__(BASE_URL, max_retries=5, status_forcelist=(500, 502, 504))
 
     def get_app_daily_report(self,
@@ -28,11 +31,21 @@ class AppsFlyerClient(HttpClient):
                              attribute_to_retargeting: bool,
                              filter_by_event_name: List,
                              filter_by_media_source: List) -> requests.Response:
-        query_params = {
-            "api_token": self.api_token,
-            "from": date.get("start_date"),
-            "to": date.get("end_date")
-        }
+
+        if self.token_type == "v1":
+            headers = None
+            query_params = {
+                "api_token": self.api_token,
+                "from": date.get("start_date"),
+                "to": date.get("end_date")
+            }
+        else:
+            headers = {"Authorization": "Bearer " + self.api_token}
+            query_params = {
+                "from": date.get("start_date"),
+                "to": date.get("end_date")
+            }
+
         endpoint = "/".join([app_id, report_name, API_VERSION])
 
         if len(filter_by_event_name) > 0:
@@ -51,7 +64,16 @@ class AppsFlyerClient(HttpClient):
             query_params["reattr"] = "true"
 
         try:
-            report = self.get_raw(endpoint_path=endpoint, params=query_params, timeout=MAX_TIMEOUT_FOR_REQUEST)
+            if self.token_type == "v1":
+                report = self.get_raw(endpoint_path=endpoint,
+                                      params=query_params,
+                                      timeout=MAX_TIMEOUT_FOR_REQUEST)
+            else:
+                report = self.get_raw(endpoint_path=endpoint,
+                                      params=query_params,
+                                      timeout=MAX_TIMEOUT_FOR_REQUEST,
+                                      headers=headers)
+
         except (HTTPError, RetryError) as http_error:
             raise AppsFlyerClientException(http_error) from http_error
 
