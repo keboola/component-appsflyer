@@ -63,7 +63,8 @@ class AppsFlyerClient(HttpClient):
                 f"Check if query_params are valid {query_params}")
         elif report.status_code == 401:
             logging.error(report.text)
-            raise AppsFlyerClientException(f"Error occurred : {report.reason}. Check if your API token is valid")
+            raise AppsFlyerClientException(f"Error occurred : {report.reason} when fetching {endpoint} endpoint."
+                                           f"Check if your API token is valid")
         elif report.status_code not in [200]:
             raise AppsFlyerClientException(f"Error occurred : {report.reason}. {report.text}")
 
