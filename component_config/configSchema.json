@@ -130,7 +130,7 @@
       "title": "API token v1",
       "format": "password",
       "description": "User's external API Authorization Key, account owner API Key should be used",
-            "options": {
+      "options": {
         "dependencies": {
           "token_type": "v1"
         }
@@ -142,7 +142,7 @@
       "title": "API token v2",
       "format": "password",
       "description": "User's external API V2 Authorization Key, account owner API V2 Key should be used",
-                  "options": {
+      "options": {
         "dependencies": {
           "token_type": "v2"
         }
