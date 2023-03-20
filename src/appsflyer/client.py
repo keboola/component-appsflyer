@@ -53,7 +53,6 @@ class AppsFlyerClient(HttpClient):
             }
 
         endpoint = "/".join([app_id, report_name, API_VERSION])
-        print(self.base_url+endpoint)
 
         if len(filter_by_event_name) > 0:
             query_params["event_name"] = filter_by_event_name[0]['event_name'].replace(' ', '')

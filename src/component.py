@@ -76,8 +76,6 @@ class Component(ComponentBase):
         self.create_sliced_directory(table.full_path)
 
         for i, generated_report in enumerate(self.get_single_reports(client, interval_days, report)):
-            print(generated_report)
-            exit()
             output_file = path.join(table.full_path,
                                     f"{report.app_id}-{interval_days[i].get('start_date')}-"
                                     f"{interval_days[i].get('end_date')}.csv")
@@ -104,6 +102,7 @@ class Component(ComponentBase):
         with open(output_file_name, "w") as out_file:
             for line in report_data.splitlines()[1:]:
                 out_file.write(line)
+                logging.info(line)
                 out_file.write('\n')
             columns = report_data.splitlines()[0].split(",")
         return columns
