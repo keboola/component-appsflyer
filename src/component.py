@@ -79,7 +79,9 @@ class Component(ComponentBase):
             output_file = path.join(table.full_path,
                                     f"{report.app_id}-{interval_days[i].get('start_date')}-"
                                     f"{interval_days[i].get('end_date')}.csv")
-            table.columns = self.save_report(output_file, generated_report.text)
+            columns = self.save_report(output_file, generated_report.text)
+            columns = [col.replace("\ufeff", "") for col in columns]
+            table.columns = columns
             print(table.columns)
         self.write_manifest(table)
 
