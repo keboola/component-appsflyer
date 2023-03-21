@@ -4,7 +4,6 @@ from typing import List, Dict
 from requests.exceptions import RetryError
 import requests
 import logging
-import backoff
 
 API_VERSION = "v5"
 
@@ -87,9 +86,9 @@ class AppsFlyerClient(HttpClient):
             raise AppsFlyerClientException(http_error) from http_error
 
         if report.status_code == 400:
-            raise AppsFlyerClientException(f"API Quota reached, visit "
-                                           f"https://support.appsflyer.com/hc/en-us/articles/207034366-Report-"
-                                           f"generation-quotas-rate-limitations- for more info.")
+            raise AppsFlyerClientException("API Quota reached, visit "
+                                           "https://support.appsflyer.com/hc/en-us/articles/207034366-Report-"
+                                           "generation-quotas-rate-limitations- for more info.")
         if report.status_code == 404:
             query_params["api_token"] = "API TOKEN IS HIDDEN FROM LOG"
             raise AppsFlyerClientException(
