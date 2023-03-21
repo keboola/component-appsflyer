@@ -80,6 +80,7 @@ class Component(ComponentBase):
                                     f"{report.app_id}-{interval_days[i].get('start_date')}-"
                                     f"{interval_days[i].get('end_date')}.csv")
             table.columns = self.save_report(output_file, generated_report.text)
+            print(table.columns)
         self.write_manifest(table)
 
     @staticmethod
@@ -102,7 +103,6 @@ class Component(ComponentBase):
         with open(output_file_name, "w") as out_file:
             for line in report_data.splitlines()[1:]:
                 out_file.write(line)
-                logging.info(line)
                 out_file.write('\n')
             columns = report_data.splitlines()[0].split(",")
         return columns
