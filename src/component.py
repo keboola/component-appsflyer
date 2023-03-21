@@ -82,7 +82,6 @@ class Component(ComponentBase):
             columns = self.save_report(output_file, generated_report.text)
             columns = [col.replace("\ufeff", "") for col in columns]
             table.columns = columns
-            print(table.columns)
         self.write_manifest(table)
 
     @staticmethod
