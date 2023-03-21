@@ -69,6 +69,7 @@ class AppsFlyerClient(HttpClient):
         if attribute_to_retargeting:
             query_params["reattr"] = "true"
 
+        print(endpoint)
         try:
             if self.token_type == "v1":
                 report = self.get_raw(endpoint_path=endpoint,

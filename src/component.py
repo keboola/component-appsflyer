@@ -102,7 +102,7 @@ class Component(ComponentBase):
 
     @staticmethod
     def save_report(output_file_name: str, report_data: str) -> List[str]:
-        with open(output_file_name, "w", encoding='utf-8-sig') as out_file:
+        with open(output_file_name, "w") as out_file:
             for line in report_data.splitlines()[1:]:
                 out_file.write(line)
                 out_file.write('\n')
