@@ -4,6 +4,7 @@ from typing import List, Dict
 from requests.exceptions import RetryError
 import requests
 import logging
+import backoff
 
 API_VERSION = "v5"
 
@@ -69,7 +70,6 @@ class AppsFlyerClient(HttpClient):
         if attribute_to_retargeting:
             query_params["reattr"] = "true"
 
-        print(endpoint)
         try:
             if self.token_type == "v1":
                 report = self.get_raw(endpoint_path=endpoint,
@@ -86,6 +86,10 @@ class AppsFlyerClient(HttpClient):
         except (HTTPError, RetryError) as http_error:
             raise AppsFlyerClientException(http_error) from http_error
 
+        if report.status_code == 400:
+            raise AppsFlyerClientException(f"API Quota reached, visit "
+                                           f"https://support.appsflyer.com/hc/en-us/articles/207034366-Report-"
+                                           f"generation-quotas-rate-limitations- for more info.")
         if report.status_code == 404:
             query_params["api_token"] = "API TOKEN IS HIDDEN FROM LOG"
             raise AppsFlyerClientException(
