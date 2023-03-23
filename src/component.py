@@ -107,9 +107,7 @@ class Component(ComponentBase):
             # workaround for:
             # https://stackoverflow.com/questions/40310042/python-read-csv-bom-embedded-into-the-first-key
             if columns.startswith("\ufeff"):
-                logging.info(f"Columns before bom fix: {columns}")
                 columns = columns.replace("\ufeff", "")
-                logging.info(f"Columns after bom fix: {columns}")
             columns = columns.split(",")
         return columns
 
