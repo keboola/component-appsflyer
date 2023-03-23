@@ -79,9 +79,7 @@ class Component(ComponentBase):
             output_file = path.join(table.full_path,
                                     f"{report.app_id}-{interval_days[i].get('start_date')}-"
                                     f"{interval_days[i].get('end_date')}.csv")
-            columns = self.save_report(output_file, generated_report.text)
-            columns = [col.replace("\ufeff", "") for col in columns]
-            table.columns = columns
+            table.columns = self.save_report(output_file, generated_report.text)
         self.write_manifest(table)
 
     @staticmethod
@@ -105,7 +103,12 @@ class Component(ComponentBase):
             for line in report_data.splitlines()[1:]:
                 out_file.write(line)
                 out_file.write('\n')
-            columns = report_data.splitlines()[0].split(",")
+            columns = report_data.splitlines()[0]
+            # workaround for:
+            # https://stackoverflow.com/questions/40310042/python-read-csv-bom-embedded-into-the-first-key
+            if columns.startswith("\ufeff"):
+                columns = columns[6:]
+            columns = columns.split(",")
         return columns
 
     @staticmethod
