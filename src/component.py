@@ -106,12 +106,11 @@ class Component(ComponentBase):
             columns = report_data.splitlines()[0]
             # workaround for:
             # https://stackoverflow.com/questions/40310042/python-read-csv-bom-embedded-into-the-first-key
-            if columns.startswith("\ufeff"):
-                logging.info(f"Columns before fix: {columns}")
-                columns = columns.encode("utf-8-sig")
-                columns = columns.decode("utf-8-sig")
-                logging.info(f"Columns after fix: {columns}")
             columns = columns.split(",")
+            if columns[0].startswith("\ufeff"):
+                logging.info(f"Columns before fix: {columns}")
+                columns[0].replace("\ufeff", "")
+                logging.info(f"Columns after fix: {columns}")
         return columns
 
     @staticmethod
