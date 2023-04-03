@@ -5,7 +5,9 @@ from requests.exceptions import RetryError
 import requests
 import logging
 
-API_VERSION = "v5"
+REPORT_VERSION = "v5"
+V1_BASE_URL = "https://hq.appsflyer.com/export/"
+V2_BASE_URL = "https://hq1.appsflyer.com/api/raw-data/export/app/"
 
 MAX_TIMEOUT_FOR_REQUEST = 1000
 
@@ -22,10 +24,10 @@ class AppsFlyerClient(HttpClient):
         self.token_type = token_type
 
         if token_type == "v1":
-            base_url = "https://hq.appsflyer.com/export/"
+            base_url = V1_BASE_URL
             logging.info("Using V1 base url.")
         else:
-            base_url = "https://hq1.appsflyer.com/api/raw-data/export/app/"
+            base_url = V2_BASE_URL
             logging.info("Using V2 base url.")
 
         super().__init__(base_url, max_retries=5, status_forcelist=(500, 502, 504))
@@ -52,7 +54,7 @@ class AppsFlyerClient(HttpClient):
                 "to": date.get("end_date")
             }
 
-        endpoint = "/".join([app_id, report_name, API_VERSION])
+        endpoint = "/".join([app_id, report_name, REPORT_VERSION])
 
         if len(filter_by_event_name) > 0:
             query_params["event_name"] = filter_by_event_name[0]['event_name'].replace(' ', '')
