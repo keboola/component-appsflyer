@@ -3,10 +3,11 @@ from requests import HTTPError
 from typing import List, Dict
 from requests.exceptions import RetryError
 import requests
+import logging
 
-BASE_URL = "https://hq.appsflyer.com/export/"
-
-API_VERSION = "v5"
+REPORT_VERSION = "v5"
+V1_BASE_URL = "https://hq.appsflyer.com/export/"
+V2_BASE_URL = "https://hq1.appsflyer.com/api/raw-data/export/app/"
 
 MAX_TIMEOUT_FOR_REQUEST = 1000
 
@@ -16,9 +17,20 @@ class AppsFlyerClientException(Exception):
 
 
 class AppsFlyerClient(HttpClient):
-    def __init__(self, api_token: str) -> None:
+    def __init__(self, api_token: str, token_type: str) -> None:
         self.api_token = api_token
-        super().__init__(BASE_URL, max_retries=5, status_forcelist=(500, 502, 504))
+        if token_type not in ["v1", "v2"]:
+            raise ValueError("token_type must be either 'v1' or 'v2'")
+        self.token_type = token_type
+
+        if token_type == "v1":
+            base_url = V1_BASE_URL
+            logging.info("Using V1 base url.")
+        else:
+            base_url = V2_BASE_URL
+            logging.info("Using V2 base url.")
+
+        super().__init__(base_url, max_retries=5, status_forcelist=(500, 502, 504))
 
     def get_app_daily_report(self,
                              report_name: str,
@@ -27,12 +39,22 @@ class AppsFlyerClient(HttpClient):
                              attribute_to_retargeting: bool,
                              filter_by_event_name: List,
                              filter_by_media_source: List) -> requests.Response:
-        query_params = {
-            "api_token": self.api_token,
-            "from": date.get("start_date"),
-            "to": date.get("end_date")
-        }
-        endpoint = "/".join([app_id, report_name, API_VERSION])
+
+        if self.token_type == "v1":
+            headers = None
+            query_params = {
+                "api_token": self.api_token,
+                "from": date.get("start_date"),
+                "to": date.get("end_date")
+            }
+        else:
+            headers = {"authorization": "Bearer " + self.api_token}
+            query_params = {
+                "from": date.get("start_date"),
+                "to": date.get("end_date")
+            }
+
+        endpoint = "/".join([app_id, report_name, REPORT_VERSION])
 
         if len(filter_by_event_name) > 0:
             query_params["event_name"] = filter_by_event_name[0]['event_name'].replace(' ', '')
@@ -49,9 +71,25 @@ class AppsFlyerClient(HttpClient):
         if attribute_to_retargeting:
             query_params["reattr"] = "true"
 
+        report = None
         try:
-            report = self.get_raw(endpoint_path=endpoint, params=query_params, timeout=MAX_TIMEOUT_FOR_REQUEST)
+            if self.token_type == "v1":
+                report = self.get_raw(endpoint_path=endpoint,
+                                      params=query_params,
+                                      timeout=MAX_TIMEOUT_FOR_REQUEST)
+            else:
+                report = self.get_raw(endpoint_path=endpoint,
+                                      params=query_params,
+                                      timeout=MAX_TIMEOUT_FOR_REQUEST,
+                                      headers=headers)
+
+            report.raise_for_status()
+
         except (HTTPError, RetryError) as http_error:
+            if report.status_code == 400:
+                raise AppsFlyerClientException("API Quota reached, visit "
+                                               "https://support.appsflyer.com/hc/en-us/articles/207034366-Report-"
+                                               "generation-quotas-rate-limitations- for more info.")
             raise AppsFlyerClientException(http_error) from http_error
 
         if report.status_code == 404:
@@ -61,7 +99,9 @@ class AppsFlyerClient(HttpClient):
                 f"Check if App ID '{app_id}' is valid.\n"
                 f"Check if query_params are valid {query_params}")
         elif report.status_code == 401:
-            raise AppsFlyerClientException(f"Error occurred : {report.reason}. Check if your API token is valid")
+            logging.error(report.text)
+            raise AppsFlyerClientException(f"Error occurred : {report.reason} when fetching {endpoint} endpoint."
+                                           f"Check if your API token is valid")
         elif report.status_code not in [200]:
             raise AppsFlyerClientException(f"Error occurred : {report.reason}. {report.text}")
 

@@ -12,10 +12,10 @@ from keboola.component.exceptions import UserException
 from appsflyer import AppsFlyerClient, AppsFlyerClientException, AppsflyerReport, create_report_object
 
 KEY_API_TOKEN = '#api_token'
+KEY_API_TOKEN_V2 = '#api_token_v2'
 KEY_REPORTS = 'reports'
 
-REQUIRED_PARAMETERS: List = [KEY_API_TOKEN]
-REQUIRED_IMAGE_PARS: List = []
+REQUIRED_PARAMETERS = []
 
 warnings.filterwarnings(
     "ignore",
@@ -31,13 +31,23 @@ class Component(ComponentBase):
 
     def run(self):
         self.validate_configuration_parameters(REQUIRED_PARAMETERS)
-        self.validate_image_parameters(REQUIRED_IMAGE_PARS)
+
         params = self.configuration.parameters
+        api_token_v1 = params.get(KEY_API_TOKEN, None)
+        api_token_v2 = params.get(KEY_API_TOKEN_V2, None)
 
-        api_token = params.get(KEY_API_TOKEN)
-        reports = params.get(KEY_REPORTS)
+        if api_token_v1:
+            api_token = api_token_v1
+            token_type = "v1"
+        elif api_token_v2:
+            api_token = api_token_v2
+            token_type = "v2"
+        else:
+            raise UserException("API token V1 or V2 must be specified in config parameters.")
 
-        client = AppsFlyerClient(api_token)
+        reports = params.get(KEY_REPORTS, [])
+
+        client = AppsFlyerClient(api_token, token_type)
 
         for report in reports:
             self.fetch_report(client, report)
@@ -99,7 +109,12 @@ class Component(ComponentBase):
             for line in report_data.splitlines()[1:]:
                 out_file.write(line)
                 out_file.write('\n')
-            columns = report_data.splitlines()[0].split(",")
+            columns = report_data.splitlines()[0]
+            # workaround for:
+            # https://stackoverflow.com/questions/40310042/python-read-csv-bom-embedded-into-the-first-key
+            if columns.startswith("\ufeff"):
+                columns = columns.replace("\ufeff", "")
+            columns = columns.split(",")
         return columns
 
     @staticmethod
