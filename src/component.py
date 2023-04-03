@@ -33,15 +33,15 @@ class Component(ComponentBase):
         self.validate_configuration_parameters(REQUIRED_PARAMETERS)
 
         params = self.configuration.parameters
-        api_token_v1 = params.get(KEY_API_TOKEN, None)
         api_token_v2 = params.get(KEY_API_TOKEN_V2, None)
+        api_token_v1 = params.get(KEY_API_TOKEN, None)
 
-        if api_token_v1:
-            api_token = api_token_v1
-            token_type = "v1"
-        elif api_token_v2:
+        if api_token_v2:
             api_token = api_token_v2
             token_type = "v2"
+        elif api_token_v1:
+            api_token = api_token_v1
+            token_type = "v1"
         else:
             raise UserException("API token V1 or V2 must be specified in config parameters.")
 
