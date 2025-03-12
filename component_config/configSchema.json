@@ -95,14 +95,6 @@
             "description": "Intervals in which reports are fetched",
             "minimum": 1,
             "propertyOrder": 90
-          },
-          "max_requests_per_minute": {
-            "type": "integer",
-            "title": "Rate limit",
-            "default": 1,
-            "description": "Maximum number of requests per minute",
-            "minimum": 1,
-            "propertyOrder": 90
           }
         }
       },

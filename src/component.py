@@ -8,14 +8,12 @@ import keboola.utils.date as dutils
 from keboola.utils.helpers import comma_separated_values_to_list
 from keboola.component.base import ComponentBase
 from keboola.component.exceptions import UserException
-from ratelimiter import RateLimiter
 
 from appsflyer import AppsFlyerClient, AppsFlyerClientException, AppsflyerReport, create_report_object
 
 KEY_API_TOKEN = '#api_token'
 KEY_API_TOKEN_V2 = '#api_token_v2'
 KEY_REPORTS = 'reports'
-KEY_MAX_REQUESTS_PER_MINUTE = 'max_requests_per_minute'
 
 REQUIRED_PARAMETERS = []
 
@@ -90,20 +88,18 @@ class Component(ComponentBase):
             table.columns = self.save_report(output_file, generated_report.text)
         self.write_manifest(table)
 
-    def get_single_reports(self, client: AppsFlyerClient, intervals: List[Dict], report: AppsflyerReport) -> Generator:
-        rate_limiter = RateLimiter(max_calls=self.configuration.parameters.get("KEY_MAX_REQUESTS_PER_MINUTE", 1),
-                                   period=60)
+    @staticmethod
+    def get_single_reports(client: AppsFlyerClient, intervals: List[Dict], report: AppsflyerReport) -> Generator:
         for interval in intervals:
             try:
                 logging.info(f"Fetching report: {report.report_name} for app_id : {report.app_id} for range "
                              f"{interval.get('start_date')}- {interval.get('end_date')}")
-                with rate_limiter:
-                    yield client.get_app_daily_report(report.report_name,
-                                                      report.app_id,
-                                                      interval,
-                                                      report.attribute_to_retargeting,
-                                                      report.filter_by_event_name,
-                                                      report.filter_by_media_source)
+                yield client.get_app_daily_report(report.report_name,
+                                                  report.app_id,
+                                                  interval,
+                                                  report.attribute_to_retargeting,
+                                                  report.filter_by_event_name,
+                                                  report.filter_by_media_source)
             except AppsFlyerClientException as client_exc:
                 raise UserException(client_exc) from client_exc
 
